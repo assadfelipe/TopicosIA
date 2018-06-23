@@ -11,34 +11,49 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.multiclass import OneVsRestClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn import svm
-#----------------------------------------------------------------
-#Read the Training and Testing Data:
-#----------------------------------------------------------------
-data_test = pd.read_csv(filepath_or_buffer="poker-hand-training-true.data.txt", sep=',', header=None)
-data_train = pd.read_csv(filepath_or_buffer="poker-hand-testing.data.txt", sep=',', header=None)
-#data_train = data_test
+
+
+
+
+
+##Funcao para calcular o erro quadratico
+def erro_quadratico(origem, destino):
+    soma = 0
+    for i in range(len(origem)):
+        parcial = origem[i] - destino[i]
+        parcial = parcial*parcial
+        soma += parcial
+    return ((soma ** 0.5)/len(origem))
+
+
+#Define o tamanho de K para o KNN
+k = int(input("Qual o tamanho de n? "))
 
 
 #----------------------------------------------------------------
-#Print it's Shape to get an idea of the data set:
+#Ler os dados de treino e teste
 #----------------------------------------------------------------
-print(data_train.shape)
-print(data_test.shape)
+data_train = pd.read_csv(filepath_or_buffer="breast-cancer-wisconsin.data.txt", sep=',', header=None)
+data_test = pd.read_csv(filepath_or_buffer="breast-cancer-wisconsin_test.txt", sep=',', header=None)
+
+
 #----------------------------------------------------------------
-#Prepare the Data for Training and Testing:
+#Imprime tamanho de cada dataset
 #----------------------------------------------------------------
-#Lendo os dados de treinamento
+print("\nTreino: ", data_train.shape, " tuplas")
+print("Teste: ", data_test.shape, "tuplas\n")
+
+
+#Separando os dados de treinamento
 array_train = data_train.values
 data_train = array_train[:,0:10]
 label_train = array_train[:,10]
-#Lendo os dados de teste
+#Separando os dados de teste
 array_test = data_test.values
 data_test = array_test[:,0:10]
 label_test = array_test[:,10]
-#----------------------------------------------------------------
-# Scaling the Data for our Main Model
-#----------------------------------------------------------------
 
 
 # Scale the Data to Make the NN easier to converge
@@ -48,29 +63,23 @@ scaler.fit(data_train)
 # Transform the training and testing data
 data_train = scaler.transform(data_train)
 data_test = scaler.transform(data_test)
-#----------------------------------------------------------------
-# Init the Models for Comparision
-#----------------------------------------------------------------
 
-k = int(input("Qual o tamanho de n? "))
 
 models = [KNeighborsClassifier(n_neighbors=k),GaussianNB(),tree.DecisionTreeClassifier(),
-          svm.SVC(kernel='linear', C=1), OneVsRestClassifier(svm.SVC(kernel='linear'))]
+          svm.SVC(kernel='linear', C=1), OneVsRestClassifier(svm.SVC(kernel='linear')), MLPClassifier(max_iter=700)]
 
-model_names = ["KNN","Naive Bayes","Decision Tree", "SVM One VS One","SVM One VS All"]
+model_names = ["KNN","Naive Bayes","Decision Tree", "SVM One VS One","SVM One VS All", "Redes Neurais"]
 #----------------------------------------------------------------
 # Run Each Model
 #----------------------------------------------------------------
 for model,name in zip(models,model_names):
     model.fit(data_train, label_train) 
-    #Predict
     prediction = model.predict(data_test)
-    # Print Accuracy
+    quadratico = erro_quadratico(label_test, prediction)
     acc = accuracy_score(label_test, prediction)
-    print("Accuracy Using",name,": " + str(acc)+'\n')
-    #print(classification_report(label_test,prediction))
-    #print(confusion_matrix(label_test, prediction))
-    #print("\n\n########################################################################################################\n\n")
+    print("Accuracy Using",name,": " + str(acc))
+    print("Erro Quadratico Usando",name,": " + str(quadratico) + "\n")
+
 
 
 
