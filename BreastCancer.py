@@ -13,9 +13,7 @@ from sklearn.ensemble import BaggingClassifier
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn import svm
-
-
-
+from sklearn.naive_bayes import BernoulliNB
 
 
 ##Funcao para calcular o erro quadratico
@@ -48,14 +46,14 @@ print("Teste: ", data_test.shape, "tuplas\n")
 
 #Separando os dados de treinamento
 array_train = data_train.values
-data_train = array_train[:,0:10]
+data_train = array_train[:,2:4]
 label_train = array_train[:,10]
 #Separando os dados de teste
 array_test = data_test.values
-data_test = array_test[:,0:10]
+data_test = array_test[:,2:4]
 label_test = array_test[:,10]
 
-
+'''
 # Scale the Data to Make the NN easier to converge
 scaler = StandardScaler()
 # Fit only to the training data
@@ -63,22 +61,23 @@ scaler.fit(data_train)
 # Transform the training and testing data
 data_train = scaler.transform(data_train)
 data_test = scaler.transform(data_test)
+'''
 
-
-models = [KNeighborsClassifier(n_neighbors=k),GaussianNB(),tree.DecisionTreeClassifier(),
+models = [KNeighborsClassifier(n_neighbors=k),GaussianNB(),BernoulliNB(),tree.DecisionTreeClassifier(),
           svm.SVC(kernel='linear', C=1), OneVsRestClassifier(svm.SVC(kernel='linear')), MLPClassifier(max_iter=700)]
 
-model_names = ["KNN","Naive Bayes","Decision Tree", "SVM One VS One","SVM One VS All", "Redes Neurais"]
+model_names = ["KNN","Naive Bayes - Gaussiano","Naive Bayes - Bernoulli","Decision Tree", "SVM One VS One","SVM One VS All", "Redes Neurais"]
 #----------------------------------------------------------------
 # Run Each Model
 #----------------------------------------------------------------
 for model,name in zip(models,model_names):
+    print('\n')
     model.fit(data_train, label_train) 
     prediction = model.predict(data_test)
     quadratico = erro_quadratico(label_test, prediction)
     acc = accuracy_score(label_test, prediction)
     print("Accuracy Using",name,": " + str(acc))
-    print("Erro Quadratico Usando",name,": " + str(quadratico) + "\n")
+    print("Erro Quadratico Usando",name,": " + str(quadratico))
 
 
 
